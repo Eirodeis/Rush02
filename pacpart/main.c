@@ -6,31 +6,44 @@
 /*   By: pbonilla <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/26 14:27:07 by pbonilla          #+#    #+#             */
-/*   Updated: 2020/09/26 20:05:04 by pbonilla         ###   ########.fr       */
+/*   Updated: 2020/09/27 11:21:12 by pbonilla         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "definition.h"
 
+char		*ft_strdup(char *src)
+{
+	char	*dup;
+	int		i;
+
+	i = -1;
+	if (!(dup = malloc(sizeof(*dup) * (ft_strlen(src) + 1))))
+		return (NULL);
+	while (src[++i])
+		dup[i] = src[i];
+	dup[i] = 0;
+	return (dup);
+}
+
 int		add_to_dict(t_def **dictionary, char *buff,int l)
 {
 	int 	i;
 	int 	j;
-	char	*char_nbr;
+	char	*nbr;
 	char	*str;
-	unsigned long	nbr;
 
-	char_nbr = malloc(sizeof(char) * 100);
-	str = malloc(sizeof(char) * 100);
+	nbr = malloc(sizeof(char*) * 100);
+	str = malloc(sizeof(char*) * 100);
 	j = 0;
 	i = 0;
 
 	while (buff[i] && buff[i] >= '0' && buff[i] <= '9')
 	{
-		char_nbr[i] = buff[i];
+		nbr[i] = buff[i];
 		++i;
 	}
-	char_nbr[i] = 0;
+	nbr[i] = 0;
 	while (buff[i] && (buff[i] == ' ' || buff[i] == ':'))
 		++i;
 	while (buff[i])
@@ -40,10 +53,9 @@ int		add_to_dict(t_def **dictionary, char *buff,int l)
 		++i;
 	}
 	str[j] = 0;
-	nbr = ft_atoi(char_nbr);
-	dictionary[l] = malloc(sizeof(t_def));
-	dictionary[l]->nbr = nbr;
-	dictionary[l]->str = str;
+	dictionary[l] = malloc(sizeof(t_def*));
+	dictionary[l]->nbr = ft_strdup(nbr);
+	dictionary[l]->str = ft_strdup(str);
 	return (0);
 }
 
@@ -73,6 +85,7 @@ int		count_lines(int dict_file)
 		}
 
 	}
+	printf("nb lignes = %d\n", lines);
 	return (lines);
 }
 
@@ -81,8 +94,7 @@ int		file_to_dict(t_def **dictionary, int dict_file)
 	char			buff[1024];
 	char			c;
 	int				i,j,k,l;
-	if (!(dictionary = malloc(sizeof(t_def**) * count_lines(dict_file))))
-		return (put_error(2));
+
 	close(dict_file);
 	dict_file = open("numbers.dict", O_RDONLY);
 	if (dict_file == -1)
@@ -109,13 +121,18 @@ int		file_to_dict(t_def **dictionary, int dict_file)
 
 int	main()
 {
-	t_def	**dictionary = NULL;
+	t_def	**dictionary;
 	int		dict_file;
 
 	dict_file = open("numbers.dict", O_RDONLY);
 	if (dict_file == -1)
 		return (put_error(2));
+	if (!(dictionary = malloc(sizeof(t_def**) * count_lines(dict_file))))
+		return (put_error(2));
 	if (!file_to_dict(dictionary, dict_file))
 		return (put_error(2));
+	int i = 0;
+	while (++i < 40)
+		printf("%s , %s\n",dictionary[i]->nbr, dictionary[i]->str);
 	return (0);
 }
